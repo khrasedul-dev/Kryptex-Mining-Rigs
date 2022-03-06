@@ -5,7 +5,7 @@ const cheerio = require('cheerio')
 
 const productModel = require('./product')
 
-const bot = new Telegraf('5122442804:AAEsQwUFc97XA_47onoEsS8QBMufFnkE_Js')
+const bot = new Telegraf('5013670828:AAFjbVkqn-DtYj44TXwW22jyhoTvq7PXuCs')
 
 mongoose.connect('mongodb+srv://rasedul20:rasedul20@cluster0.pget2.mongodb.net/telegramProject?retryWrites=true&w=majority', {
 	useNewUrlParser: true,
@@ -21,7 +21,15 @@ let per_page = 2
 
 
 bot.start((ctx)=>{
-    ctx.reply('The bot is under development')
+    ctx.telegram.sendMessage(ctx.chat.id , "To search a product enter command /p product_name (Ex: /p gpu)." ,{
+        reply_markup: {
+            keyboard: [
+                [{text: "Products"}],
+                [{text: "Help"},{text: "About"}]
+            ],
+            resize_keyboard: true
+        }
+    }).catch((e)=>console.log(e))
 })
 
 
@@ -62,15 +70,12 @@ bot.hears(/kryptex-miners.com/gi,ctx=>{
 
 
 
+bot.hears('Products',async(ctx)=>{
 
-
-bot.command('test',async(ctx)=>{
-
-    try {
-        const data = await productModel.find().limit(per_page).sort({date: 1})
+    productModel.find().limit(per_page).sort({date: 1}).then((data)=>{
 
         if (data.length > 0) {
-            await data.map((data)=>{
+            data.map((data)=>{
                 ctx.telegram.sendPhoto(ctx.chat.id , `${data.image}`,{
                     reply_markup: {
                         inline_keyboard:[
@@ -82,22 +87,29 @@ bot.command('test',async(ctx)=>{
                 }).catch((e)=>console.log(e))
             })
 
-            await pagination(ctx)
+            pagination(ctx)
 
         }else{
             ctx.reply(`Product not found !`)
         }
 
-    } catch (e) {
-        console.log(e)
-    }
+    }).catch((e)=>console.log(e))
 
 })
 
+bot.hears('Help',ctx=>{
+    ctx.telegram.sendMessage(ctx.chat.id , `Help: \n\nA. See our product /products \nB.To search a product enter command /p product_name \nEx: 1. /p gpu - Search gpu`)
+})
 
-bot.on('text',ctx=>{
-    
-    const input = ctx.update.message.text
+bot.hears('About',ctx=>{
+    ctx.telegram.sendMessage(ctx.chat.id , `This is not complete wait for your info`)
+})
+
+bot.command('p',ctx=>{
+
+    const m = ctx.update.message.text 
+    const f = m.replace('/p','')
+    const input = f.trim()
 
     const findQuery = {
         $or: [{title: new RegExp( input, "gi")},{short_desc: new RegExp( input, "gi")}]
@@ -183,8 +195,6 @@ function pagination(ctx) {
             const count = data.length / per_page
             page_count = Math.floor(count)
         }
-        
-        console.log(page_count)
 
         for(i = 1; i <= page_count; i++){
     
@@ -217,4 +227,4 @@ function pagination(ctx) {
 
 }
 
-bot.launch()
+bot.launch().catch((e)=>console.log(e))
