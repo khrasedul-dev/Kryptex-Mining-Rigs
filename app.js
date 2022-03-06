@@ -5,7 +5,8 @@ const cheerio = require('cheerio')
 
 const productModel = require('./product')
 
-const bot = new Telegraf('5013670828:AAFjbVkqn-DtYj44TXwW22jyhoTvq7PXuCs')
+// const bot = new Telegraf('5013670828:AAFjbVkqn-DtYj44TXwW22jyhoTvq7PXuCs')
+const bot = new Composer()
 
 mongoose.connect('mongodb+srv://rasedul20:rasedul20@cluster0.pget2.mongodb.net/telegramProject?retryWrites=true&w=majority', {
 	useNewUrlParser: true,
@@ -227,4 +228,6 @@ function pagination(ctx) {
 
 }
 
-bot.launch().catch((e)=>console.log(e))
+// bot.launch().catch((e)=>console.log(e))
+
+module.exports = bot
